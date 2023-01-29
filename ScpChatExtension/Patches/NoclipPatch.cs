@@ -33,12 +33,15 @@ public class NoclipPatch
 
         newInstructions.InsertRange(index, new List<CodeInstruction>()
         {
-            // if (referenceHub.roleManager.CurrentRole.Team != Team.SCPs) return;
+            // if (!Plugin.Config.AllowedRoles.Contains(ReferenceHub.roleManager.CurrentRole.RoleTypeId)) return;
+            new (OpCodes.Ldsfld, AccessTools.Field(typeof(EntryPoint), nameof(EntryPoint.PluginConfig))),
+            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PluginConfig), nameof(PluginConfig.AllowedRoles))),
             new (OpCodes.Ldloc_0),
             new (OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub), nameof(ReferenceHub.roleManager))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleManager), nameof(PlayerRoleManager.CurrentRole))),
-            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.Team))),
-            new (OpCodes.Brtrue_S, ret),
+            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.RoleTypeId))),
+            new (OpCodes.Callvirt, AccessTools.Method(typeof(HashSet<RoleTypeId>), nameof(HashSet<RoleTypeId>.Contains))),
+            new (OpCodes.Brfalse_S, ret),
 
             // if (EntryPoint.AllowedNoclip.Contains(ReferenceHub)
             new (OpCodes.Call, AccessTools.PropertyGetter(typeof(EntryPoint), nameof(EntryPoint.ProximityToggled))),
