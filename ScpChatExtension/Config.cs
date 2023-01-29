@@ -1,17 +1,15 @@
 ﻿using System.Collections.Generic;
-using Exiled.API.Interfaces;
 using PlayerRoles;
 
 namespace ScpChatExtension
 {
-    public class PluginConfig : IConfig
+    public class Config
     {
         public bool IsEnabled { get; set; } = true;
-        public bool Debug { get; set; }
 
         public float MaxProximityDistance { get; set; } = 7f;
 
-        public HashSet<RoleTypeId> AllowedRoles { get; set; } = new HashSet<RoleTypeId>()
+        public HashSet<RoleTypeId> AllowedRoles { get; set; } = new()
         {
             RoleTypeId.Scp049,
             RoleTypeId.Scp096,

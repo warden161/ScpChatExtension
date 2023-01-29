@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
-using Exiled.API.Features;
 using HarmonyLib;
 using NorthwoodLib.Pools;
 using PlayerRoles;
 using PlayerRoles.FirstPersonControl.NetworkMessages;
+using PluginAPI.Core;
 
 namespace ScpChatExtension.Patches;
 
@@ -14,13 +14,13 @@ public class NoclipPatch
     public static void SendActivateMessage(ReferenceHub hub)
     {
         var ply = Player.Get(hub);
-        ply.ShowHint(EntryPoint.PluginConfig.EnableHint);
+        ply.ReceiveHint(EntryPoint.Config.EnableHint);
     }
 
     public static void SendDeactivateMessage(ReferenceHub hub)
     {
         var ply = Player.Get(hub);
-        ply.ShowHint(EntryPoint.PluginConfig.DisableHint);
+        ply.ReceiveHint(EntryPoint.Config.DisableHint);
     }
 
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -33,12 +33,15 @@ public class NoclipPatch
 
         newInstructions.InsertRange(index, new List<CodeInstruction>()
         {
-            // if (referenceHub.roleManager.CurrentRole.Team != Team.SCPs) return;
+            // if (!Plugin.Config.AllowedRoles.Contains(ReferenceHub.roleManager.CurrentRole.RoleTypeId)) return;
+            new (OpCodes.Ldsfld, AccessTools.Field(typeof(EntryPoint), nameof(EntryPoint.Config))),
+            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Config), nameof(Config.AllowedRoles))),
             new (OpCodes.Ldloc_0),
             new (OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub), nameof(ReferenceHub.roleManager))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleManager), nameof(PlayerRoleManager.CurrentRole))),
-            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.Team))),
-            new (OpCodes.Brtrue_S, ret),
+            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.RoleTypeId))),
+            new (OpCodes.Callvirt, AccessTools.Method(typeof(HashSet<RoleTypeId>), nameof(HashSet<RoleTypeId>.Contains))),
+            new (OpCodes.Brfalse_S, ret),
 
             // if (EntryPoint.AllowedNoclip.Contains(ReferenceHub)
             new (OpCodes.Call, AccessTools.PropertyGetter(typeof(EntryPoint), nameof(EntryPoint.ProximityToggled))),

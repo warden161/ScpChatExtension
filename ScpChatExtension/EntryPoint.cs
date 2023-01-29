@@ -1,35 +1,28 @@
-﻿using Exiled.API.Features;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using PluginAPI.Core.Attributes;
+using PluginAPI.Core;
 
 namespace ScpChatExtension;
 
-public class EntryPoint : Plugin<PluginConfig>
+public class EntryPoint
 {
-    public override string Author { get; } = "warden161 (original by Jesus-QC)";
-    public override string Name { get; } = "ScpChatExtensions";
-    public override Version RequiredExiledVersion { get; } = new(6, 0, 0);
-    public override Version Version { get; } = new(0, 1, 0);
-
-    public static Harmony HarmonyPatcher { get; private set; }
-    public static List<ReferenceHub> ProximityToggled { get; set; } = new List<ReferenceHub>();
+    public const string Name = "ScpChatExtension";
+    public const string Version = "1.0.0";
+    public static Harmony HarmonyPatcher { get; } = new(HarmonyId);
+    public static List<ReferenceHub> ProximityToggled { get; set; } = new();
     public const string HarmonyId = "com.warden161.chatextensions";
-    public static PluginConfig PluginConfig;
 
-    public override void OnEnabled()
+    [PluginEntryPoint(Name, Version, "Allows SCPs to toggle proximity chat using LeftAlt.", "warden161")]
+    public void Load()
     {
-        PluginConfig = Config;
-        HarmonyPatcher = new(HarmonyId);
+        if (!Config.IsEnabled)
+            return;
+
+        Log.Info($"{Name} v{Version} has been loaded!");
         HarmonyPatcher.PatchAll();
-        base.OnEnabled();
     }
 
-    public override void OnDisabled()
-    {
-        PluginConfig = null;
-        HarmonyPatcher.UnpatchAll(HarmonyId);
-        HarmonyPatcher = null;
-        base.OnDisabled();
-    }
+    [PluginConfig] public static Config Config;
 }

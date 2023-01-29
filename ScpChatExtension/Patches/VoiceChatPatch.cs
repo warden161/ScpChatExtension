@@ -60,8 +60,8 @@ public class VoiceChatPatch
             new (OpCodes.Brfalse_S, skip), // == 0 (Team.SCPs value)
 
             // if (!EntryPoint.PluginConfig.AllowedRoles.Contains(msg.Speaker.roleManager.RoleTypeId)) skip;
-            new (OpCodes.Ldsfld, AccessTools.Field(typeof(EntryPoint), nameof(EntryPoint.PluginConfig))),
-            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PluginConfig), nameof(PluginConfig.AllowedRoles))),
+            new (OpCodes.Ldsfld, AccessTools.Field(typeof(EntryPoint), nameof(EntryPoint.Config))),
+            new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Config), nameof(Config.AllowedRoles))),
             new (OpCodes.Ldarg_1),
             new (OpCodes.Ldfld, AccessTools.Field(typeof(VoiceMessage), nameof(VoiceMessage.Speaker))),
             new (OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub), nameof(ReferenceHub.roleManager))),
@@ -96,7 +96,7 @@ public class VoiceChatPatch
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.transform))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Transform), nameof(Transform.position))),
             new (OpCodes.Call, AccessTools.Method(typeof(Vector3), nameof(Vector3.Distance))),
-            new (OpCodes.Ldc_R4, EntryPoint.PluginConfig.MaxProximityDistance),
+            new (OpCodes.Ldc_R4, EntryPoint.Config.MaxProximityDistance),
             new (OpCodes.Bge_S, skip),
 
             // msg.Channel = VoiceChatChannel.Proximity;
