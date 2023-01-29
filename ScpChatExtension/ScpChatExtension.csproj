@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ScpChatExtension</RootNamespace>
-    <AssemblyName>ScpChatExtension</AssemblyName>
+    <AssemblyName>ScpChatExtension-NW</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>latest</LangVersion>
