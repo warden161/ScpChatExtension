@@ -4,4 +4,4 @@ An EXILED plugin that allows SCPs to talk in the "Proximity Chat". (It merges sc
 You can configure the proximity chat range and the allowed roles.
 
 # More versions
-**NWAPI**: https://github.com/ThijsNameIsTaken/ScpChatExtension
+**[NWAPI](https://github.com/warden161/ScpChatExtension/tree/nwapi)**
