@@ -29,6 +29,7 @@ public class VoiceChatPatch
     {
         List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
 
+        Label cont = generator.DefineLabel();
         Label skip = generator.DefineLabel();
         Label spectatorSkip = generator.DefineLabel();
         Label noSpectatorSkip = generator.DefineLabel();
@@ -57,7 +58,7 @@ public class VoiceChatPatch
             new (OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub), nameof(ReferenceHub.roleManager))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleManager), nameof(PlayerRoleManager.CurrentRole))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.Team))),
-            new (OpCodes.Brfalse_S, skip), // == 0 (Team.SCPs value)
+            new (OpCodes.Brfalse_S, cont), // == 0 (Team.SCPs value)
 
             // if (!EntryPoint.PluginConfig.AllowedRoles.Contains(msg.Speaker.roleManager.RoleTypeId)) skip;
             new (OpCodes.Ldsfld, AccessTools.Field(typeof(EntryPoint), nameof(EntryPoint.PluginConfig))),
@@ -110,6 +111,8 @@ public class VoiceChatPatch
             new (OpCodes.Ldc_I4_0),
             new (OpCodes.Callvirt, GetSendMethod())
         });;
+
+        newInstructions[newInstructions.Count - 1].WithLabels(cont);
 
         foreach (CodeInstruction instruction in newInstructions)
             yield return instruction;
