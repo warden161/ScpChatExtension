@@ -28,9 +28,11 @@ public class NoclipPatch
         List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Shared.Rent(instructions);
 
         Label add = generator.DefineLabel();
-        Label ret = generator.DefineLabel();
-        int index = newInstructions.FindIndex(x => x.opcode == OpCodes.Ldfld) - 2;
+        Label skip = generator.DefineLabel();
+        int index = newInstructions.FindIndex(x => x.opcode == OpCodes.Brfalse_S) - 1;
 
+        newInstructions[index].WithLabels(skip);
+        
         newInstructions.InsertRange(index, new List<CodeInstruction>()
         {
             // if (!Plugin.Config.AllowedRoles.Contains(ReferenceHub.roleManager.CurrentRole.RoleTypeId)) return;
@@ -41,7 +43,7 @@ public class NoclipPatch
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleManager), nameof(PlayerRoleManager.CurrentRole))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.RoleTypeId))),
             new (OpCodes.Callvirt, AccessTools.Method(typeof(HashSet<RoleTypeId>), nameof(HashSet<RoleTypeId>.Contains))),
-            new (OpCodes.Brfalse_S, ret),
+            new (OpCodes.Brfalse_S, skip),
 
             // if (EntryPoint.AllowedNoclip.Contains(ReferenceHub)
             new (OpCodes.Call, AccessTools.PropertyGetter(typeof(EntryPoint), nameof(EntryPoint.ProximityToggled))),
@@ -56,18 +58,16 @@ public class NoclipPatch
             new (OpCodes.Ldloc_0),
             new (OpCodes.Callvirt, AccessTools.Method(typeof(List<ReferenceHub>), nameof(List<ReferenceHub>.Remove))),
             new (OpCodes.Pop),
-            new (OpCodes.Ret),
+            new (OpCodes.Br, skip),
 
             // else EntryPoint.AllowedNoclip.Add(ReferenceHub);
             new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(EntryPoint), nameof(EntryPoint.ProximityToggled))).WithLabels(add),
             new (OpCodes.Ldloc_0),
             new (OpCodes.Call, AccessTools.Method(typeof(NoclipPatch), nameof(NoclipPatch.SendActivateMessage))),
             new (OpCodes.Ldloc_0),
-            new (OpCodes.Callvirt, AccessTools.Method(typeof(List<ReferenceHub>), nameof(List<ReferenceHub>.Add))),
+            new (OpCodes.Callvirt, AccessTools.Method(typeof(List<ReferenceHub>), nameof(List<ReferenceHub>.Add)))
         });
-
-        newInstructions[newInstructions.Count - 1].WithLabels(ret);
-
+        
         foreach (CodeInstruction instruction in newInstructions)
             yield return instruction;
 

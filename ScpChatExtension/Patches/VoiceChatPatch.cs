@@ -112,7 +112,8 @@ public class VoiceChatPatch
         });;
 
         index = newInstructions.FindLastIndex(x => x.Calls(GetSendMethod()));
-        newInstructions[index + 1].WithLabels(cont);
+        newInstructions[index + 1].WithLabels(skip);
+        
         foreach (CodeInstruction instruction in newInstructions)
             yield return instruction;
         
