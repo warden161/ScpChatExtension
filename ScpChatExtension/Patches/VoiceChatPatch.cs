@@ -109,10 +109,7 @@ public class VoiceChatPatch
             new (OpCodes.Ldarg_1),
             new (OpCodes.Ldc_I4_0),
             new (OpCodes.Callvirt, GetSendMethod())
-        });;
-
-        index = newInstructions.FindLastIndex(x => x.Calls(GetSendMethod()));
-        newInstructions[index + 1].WithLabels(skip);
+        });
         
         foreach (CodeInstruction instruction in newInstructions)
             yield return instruction;
