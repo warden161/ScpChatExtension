@@ -112,7 +112,7 @@ public class VoiceChatPatch
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.connectionToClient))),
             new (OpCodes.Ldarg_1),
             new (OpCodes.Ldc_I4_0),
-            new (OpCodes.Callvirt, GetSendMethod()),
+            new (OpCodes.Callvirt, GetSendMethod())
         });
         
         foreach (CodeInstruction instruction in newInstructions)
