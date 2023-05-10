@@ -6,8 +6,10 @@ using Mirror;
 using NorthwoodLib.Pools;
 using PlayerRoles;
 using PlayerRoles.Spectating;
+using PluginAPI.Core;
 using UnityEngine;
 using VoiceChat.Networking;
+using Log = Exiled.API.Features.Log;
 
 namespace ScpChatExtension.Patches;
 
@@ -19,9 +21,11 @@ public class VoiceChatPatch
         foreach (MethodInfo method in typeof(NetworkConnection).GetMethods())
         {
             if (method.Name is nameof(NetworkConnection.Send) && method.GetGenericArguments().Length != 0)
+            {
                 return method.MakeGenericMethod(typeof(VoiceMessage));
-        }
-
+            }
+        } 
+        
         return null;
     }
     
@@ -47,13 +51,13 @@ public class VoiceChatPatch
             new (OpCodes.Brfalse_S, skip),
 
             // if (voiceChatChannel != VoiceChatChannel.ScpChat) skip;
-            new (OpCodes.Ldloc_2),
+            new (OpCodes.Ldloc_S, 1),
             new (OpCodes.Ldc_I4_3),
             new (OpCodes.Ceq),
             new (OpCodes.Brfalse_S, skip),
 
             // if (referenceHub.roleManager.CurrentRole.Team == Team.SCPs) skip;
-            new (OpCodes.Ldloc_S, 4),
+            new (OpCodes.Ldloc_S, 3),
             new (OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub), nameof(ReferenceHub.roleManager))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleManager), nameof(PlayerRoleManager.CurrentRole))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.Team))),
@@ -72,8 +76,8 @@ public class VoiceChatPatch
 
             // if (referenceHub.roleManager.CurrentRole.Team != Team.Dead) noSpectatorSkip;
             // if (!msg.Speaker.IsSpectatedBy(referenceHub)) skip;
-            // else spectatorSkip;
-            new (OpCodes.Ldloc_S, 4),
+            // else spectatorSkip
+            new (OpCodes.Ldloc_S, 3),
             new (OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub), nameof(ReferenceHub.roleManager))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleManager), nameof(PlayerRoleManager.CurrentRole))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(PlayerRoleBase), nameof(PlayerRoleBase.Team))),
@@ -82,7 +86,7 @@ public class VoiceChatPatch
             new (OpCodes.Brfalse_S, noSpectatorSkip),
             new (OpCodes.Ldarg_1),
             new (OpCodes.Ldfld, AccessTools.Field(typeof(VoiceMessage), nameof(VoiceMessage.Speaker))),
-            new (OpCodes.Ldloc_S, 4),
+            new (OpCodes.Ldloc_S, 3),
             new (OpCodes.Call, AccessTools.Method(typeof(SpectatorNetworking), nameof(SpectatorNetworking.IsSpectatedBy))),
             new (OpCodes.Brfalse_S, skip),
             new (OpCodes.Br_S, spectatorSkip),
@@ -92,7 +96,7 @@ public class VoiceChatPatch
             new (OpCodes.Ldfld, AccessTools.Field(typeof(VoiceMessage), nameof(VoiceMessage.Speaker))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.transform))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Transform), nameof(Transform.position))),
-            new (OpCodes.Ldloc_S, 4),
+            new (OpCodes.Ldloc_S, 3),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.transform))),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Transform), nameof(Transform.position))),
             new (OpCodes.Call, AccessTools.Method(typeof(Vector3), nameof(Vector3.Distance))),
@@ -104,15 +108,13 @@ public class VoiceChatPatch
             new CodeInstruction(OpCodes.Ldarga_S, 1).WithLabels(spectatorSkip),
             new (OpCodes.Ldc_I4_1),
             new (OpCodes.Stfld, AccessTools.Field(typeof(VoiceMessage), nameof(VoiceMessage.Channel))),
-            new (OpCodes.Ldloc_S, 4),
+            new (OpCodes.Ldloc_S, 3),
             new (OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(ReferenceHub), nameof(ReferenceHub.connectionToClient))),
             new (OpCodes.Ldarg_1),
             new (OpCodes.Ldc_I4_0),
-            new (OpCodes.Callvirt, GetSendMethod())
-        });;
-
-        index = newInstructions.FindLastIndex(x => x.Calls(GetSendMethod()));
-        newInstructions[index + 1].WithLabels(cont);
+            new (OpCodes.Callvirt, GetSendMethod()),
+        });
+        
         foreach (CodeInstruction instruction in newInstructions)
             yield return instruction;
         
