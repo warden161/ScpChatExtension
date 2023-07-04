@@ -1,4 +1,4 @@
-# **[UPDATED VERSION HERE](https://github.com/Jon02/ScpChatExtension/)**
+# ❗❗❗ **[UPDATED VERSION HERE](https://github.com/Jon02/ScpChatExtension/)** ❗❗❗
 
 ## ScpChatExtension
 An EXILED plugin that allows SCPs to talk in the "Proximity Chat". (It merges scpchat and proximity)
